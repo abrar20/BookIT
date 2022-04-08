@@ -2,10 +2,13 @@ import axios from "axios"
 import { ALL_ROOMS_FAIL, ALL_ROOMS_SUCCESS, CLEAR_ERRORS,ROOM_DETAILS_FAIL,ROOM_DETAILS_SUCCESS } from "../constants/roomConstants"
 import absoluteUrl from "next-absolute-url";
 
-export const getRooms =(req, currentPage = 1, location ='') => async(dispatch) =>{
-    const {origin} = absoluteUrl(req)
+export const getRooms =(req, currentPage = 1, location ='', guests,category) => async(dispatch) =>{
     try {
-        const {data} = await axios.get(`${origin}/api/rooms?page=${currentPage}&loaction=${location}`);
+        const {origin} = absoluteUrl(req)
+        let link = `${origin}/api/rooms?page=${currentPage}&location=${location}`;
+        if(guests) link =link.concat(`&guestCapacity=${guests}`)
+        if(category) link=link.concat(`&category=${category}`)
+        const {data} = await axios.get(link);
         dispatch({
             type:ALL_ROOMS_SUCCESS,
             payload: data
