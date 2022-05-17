@@ -2,8 +2,8 @@ const Room = require('../models/room')
 const mongoose = require('mongoose')
 const rooms = require('../data/rooms.json') 
 
-
-mongoose.connect('mongodb://localhost:27017/bookit')
+mongoose.connect('mongodb+srv://abrarbackend:abrarbackend@cluster0.aekzb.mongodb.net/Bookit?retryWrites=true&w=majority')
+// mongoose.connect('mongodb://localhost:27017/bookit')
     .then(con => {
     console.log('Connected to the database');
 })

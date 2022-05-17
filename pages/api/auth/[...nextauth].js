@@ -14,11 +14,7 @@ export default NextAuth({
     providers:[
         CredentialsProvider({
             name: 'Credentials',
-            // credentials: {
-            //     email: { label: "Email", type: "email", placeholder: "example@exam.com" },
-            //     password: {  label: "Password", type: "password" }
-            //   },
-            async authorized(credentails){
+            async authorize(credentails){
                 dbConnect();
                 const {email,password} = credentails;
 

@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.30.0",
     "mongoose": "^6.2.8",
     "next": "12.1.0",
     "next-absolute-url": "^1.2.2",
