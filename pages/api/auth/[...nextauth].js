@@ -42,8 +42,8 @@ export default NextAuth({
             user && (token.user = user)
             return Promise.resolve(token)
         },
-        session: async ({session, user})=>{
-            session.user = user.user;
+        session: async ({session, token})=>{
+            session.user = token.user;
             return Promise.resolve(session)
         }
     }
