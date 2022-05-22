@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import validator from 'validator'
 import bcrypt from "bcryptjs"
+import crypto from 'crypto'
 const userSchema = new mongoose.Schema({
     name:{
         type:String,
@@ -40,6 +41,7 @@ const userSchema = new mongoose.Schema({
     resetPasswordToken:String,
     resetPasswordExpire:Date
 })
+/// in these below methods we cant use arrow func bcause we using (this) key word and in arrow func (this) key word will be undefind
 //Encrypt password
 userSchema.pre('save', async function (next) {
     if(!this.isModified('password')){
@@ -51,5 +53,19 @@ userSchema.pre('save', async function (next) {
 // compare user password
 userSchema.methods.comparePassword= async function (enteredPassword){
     return await bcrypt.compare(enteredPassword, this.password);
+}
+// Generate resetPasswordToken
+userSchema.methods.getResetPasswordToken = async function (){
+    // generate token
+    const resetToken = crypto.randomBytes(20).toString('hex')
+
+    //hash and set to resetPasswordToken
+    this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    // set token expire time, it will expire after 30 mins
+    this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+
+    return resetToken;
+
+
 }
 export default mongoose.models.User || mongoose.model('User',userSchema)

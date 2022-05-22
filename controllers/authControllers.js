@@ -2,8 +2,10 @@ import next from 'next';
 import User from '../models/user'
 import ErrorHandler from '../utils/errorHandler';
 import catchAsyncError from '../middlewares/catchAsyncError';
-import APIFeatures from '../utils/apiFeatures';
+import sendEmail from '../utils/sendEmail'
 import cloudinary from 'cloudinary'
+import absoluteUrl from 'next-absolute-url'
+import crypto from 'crypto'
 //cloudinary config
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -40,7 +42,7 @@ const updateUserProfile = catchAsyncError(async(req,res) => {
     if(user){
         user.name = req.body.name;
         user.email = req.body.email;
-        if(password) user.password = req.body.password
+        if(req.body.password) user.password = req.body.password
     }
     //update avatar
     if(req.body.avatar !== ''){
@@ -63,6 +65,70 @@ const updateUserProfile = catchAsyncError(async(req,res) => {
     })
 })
 
+// Forgot password =>  api/password/forgot 
+const forgotPassword = catchAsyncError(async(req,res,next) => {
+    const user = await User.findOne({email: req.body.email})
+    if(!user){
+        return next(new ErrorHandler('User not found with this email',404))
+    }
+    //get reset token
+    const resetToken = user.getResetPasswordToken();
+    await user.save({validateBeforeSave: false})
+
+    // create reset password url
+    // const resetUrl = `${req.get('host')}` this (get)way does not accept in nextjs so we use next-absolute-url
+
+    //get origin
+    const {origin} = absoluteUrl(req)
+
+    // create reset password url
+    const resetUrl = `${origin}/password/reset/${resetToken}`
+    const message = `Your password reset url is as follow: \n\n ${resetUrl} \n\n\ If you have not requested this email, then ignore it.`
+
+    try{
+        await sendEmail({
+            email: user.email,
+            subject: 'BookIT Password Recovery',
+            message
+        })
+
+        res.status(200).json({
+            success: true,
+            message: `Email sent to: ${user.email}`
+        })
+    }catch(error){
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save({ validateBeforeSave: false })
+
+        return next(new ErrorHandler(error.message, 500))
+    }
+
+})
+// reset password =>  api/password/reset/:token 
+const resetPassword = catchAsyncError(async(req,res,next) => {
+    //Hash URL token
+    const resetPasswordToken = crypto.createHash('sha256').update(req.query.token).digest('hex')
+    const user = await User.findOne({resetPasswordToken,resetPasswordExpire:{$gt:Date.now()}})
+    if(!user){
+        return next(new ErrorHandler('Password rest Token is invalid or has been expired',404))
+    }
+    if(req.body.password !== req.body.confirmPassword){
+        return next(new ErrorHandler('Passwords does not matched',404))
+    }
+
+    //Set up new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined
+
+    await user.save();
+    res.status(200).json({success: true,message:"Password Updated Successfully"})
+    
+
+})
 
 
-export {registerUser, currentUserProfile, updateUserProfile}
+
+export {registerUser, currentUserProfile, updateUserProfile, forgotPassword,resetPassword}
