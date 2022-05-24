@@ -3,7 +3,7 @@ import dbConnect from '../../../../config/dbConnect'
 
 import { resetPassword } from '../../../../controllers/authControllers'
 
-import onError from '../../../../middlewares/errors'
+import onError from '../../../../middlewares/error'
 
 const handler = nc({ onError });
 

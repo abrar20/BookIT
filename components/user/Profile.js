@@ -19,7 +19,7 @@ const Profile = () => {
   const {email ,name, password} =user;
   const [avatar,setAvatar] = useState('');
   const [avatarPreview,setAvatarPreview]=useState('./images/avatar_default.jpg')
-  const {user:loadedUser, loading} = useSelector(state => state.auth)
+  const {user:loadedUser, loading} = useSelector(state => state.loadedUser)
   const {isUpdated, error, loading: updateLoading} = useSelector(state => state.user)
 
   useEffect(() => {

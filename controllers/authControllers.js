@@ -79,7 +79,7 @@ const forgotPassword = catchAsyncError(async(req,res,next) => {
     // const resetUrl = `${req.get('host')}` this (get)way does not accept in nextjs so we use next-absolute-url
 
     //get origin
-    const {origin} = absoluteUrl(req)
+    const {origin} = absoluteUrl(req);
 
     // create reset password url
     const resetUrl = `${origin}/password/reset/${resetToken}`
@@ -110,6 +110,7 @@ const forgotPassword = catchAsyncError(async(req,res,next) => {
 const resetPassword = catchAsyncError(async(req,res,next) => {
     //Hash URL token
     const resetPasswordToken = crypto.createHash('sha256').update(req.query.token).digest('hex')
+    console.log(resetPasswordToken,'token');
     const user = await User.findOne({resetPasswordToken,resetPasswordExpire:{$gt:Date.now()}})
     if(!user){
         return next(new ErrorHandler('Password rest Token is invalid or has been expired',404))
