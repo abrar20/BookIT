@@ -12,6 +12,9 @@ import {checkBooking,getBookedDates} from '../../redux/actions/bookingsAction';
 import {CHECK_BOOKING_RESET} from '../../redux/constants/bookingConstants';
 import RoomFeatures from './RoomFeatures';
 import axios from 'axios';
+import getStripe from '../../utils/getStripe'
+import NewReview from '../review/NewReview';
+import ListReviews from '../review/ListReviews';
 
 const RoomDetails = () => {
   const dispatch = useDispatch();
@@ -19,10 +22,11 @@ const RoomDetails = () => {
   const [checkInDate, setCheckInDate] = useState()
   const [checkOutDate, setCheckOutDate] = useState()
   const [daysOfStay, setDaysOfStay] =useState();
+  const [paymentLoading, setPaymentLoading] =useState(false);
   const {dates} = useSelector(state => state.bookedDates)
   const {room, error} = useSelector(state => state.roomDetails)
   const {user} = useSelector(state => state.loadedUser)
-  const {available,loading} = useSelector(state => state.checkBooking)
+  const {available,loading:bookingLoading} = useSelector(state => state.checkBooking)
   console.log(room);
   const {id} = router.query;
 
@@ -35,6 +39,9 @@ const RoomDetails = () => {
     if(error){
       toast.error(error)
       dispatch(clearErrors())
+    }
+    return () => {
+      dispatch({type: CHECK_BOOKING_RESET})
     }
   },[dispatch,id])
   const onChange =(dates) =>{
@@ -77,6 +84,23 @@ const RoomDetails = () => {
     }catch(error){
       console.log(error.response);
     }
+  }
+  const bookRoom =async (id,pricePerNight) =>{
+    setPaymentLoading(true);
+    const amount = pricePerNight * daysOfStay;
+    try{
+      const link = `/api/checkout_session/${id}?checkInDate=${checkInDate.toISOString()}&checkOutDate=${checkOutDate.toISOString()}&daysOfStay=${daysOfStay}`;
+      const {data} = await axios.get(link,{params:{amount}});
+      const stripe = await getStripe();
+      //redirect to checkout
+      stripe.redirectToCheckout({sessionId: data.id})
+      setPaymentLoading(false);
+    }catch(error){
+      setPaymentLoading(false)
+      console.log(error);
+      toast.error(error.message);
+    }
+
   }
   return (
     <>
@@ -132,36 +156,19 @@ const RoomDetails = () => {
                       Room is not Available. Try different dates</div>}
                       {available && !user && <div className='alert alert-danger my-3 font-weight-bold'>
                       Log in to book room.</div>}
-                    {available && user &&<button className="btn btn-block py-3 booking-btn" onClick={newBookingHandler}>Pay</button>}
+                    {available && user &&<button 
+                    className="btn btn-block py-3 booking-btn" 
+                    onClick={() => bookRoom(room._id, room.pricePerNight)}
+                    disabled={paymentLoading || bookingLoading ? true: false}>Pay - ${daysOfStay * room.pricePerNight}</button>}
 
                   </div>
               </div>
           </div>
-
-
-          <div className="reviews w-75">
-            <h3>Reviews:</h3>
-            <hr />
-                <div className="review-card my-3">
-                    <div className="rating-outer">
-                        <div className="rating-inner"></div>
-                    </div>
-                    <p className="review_user">by John</p>
-                    <p className="review_comment">Good Quality</p>
-
-                    <hr />
-                </div>
-
-                <div className="review-card my-3">
-                  <div className="rating-outer">
-                      <div className="rating-inner"></div>
-                  </div>
-                  <p className="review_user">by John</p>
-                  <p className="review_comment">Good Quality</p>
-
-                  <hr />
-              </div>
-        </div>
+          <NewReview/>
+          {room.reviews && room.reviews.length > 0? 
+          <ListReviews reviews={room.reviews}/>
+          :
+          <p><b>No Reviews On This Room</b></p>}
     </div>
     </>
   )

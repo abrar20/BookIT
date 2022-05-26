@@ -6,6 +6,8 @@ import {CHECK_BOOKING_REQUEST,
     BOOKED_DATES_SUCCESS,
     MY_BOOKINGS_FAIL,
     MY_BOOKINGS_SUCCESS,
+    BOOKING_DETAILS_FAIL,
+    BOOKING_DETAILS_SUCCESS,
     CLEAR_ERRORS} from '../constants/bookingConstants'
     import absoluteUrl from "next-absolute-url";
     import axios from 'axios'
@@ -64,6 +66,28 @@ export const myBookings =(authCookie,req) => async(dispatch) =>{
         } catch (error) {
             dispatch({
                 type: MY_BOOKINGS_FAIL,
+                payload:error.response.data.message
+            })
+        }
+}
+//fetch booking details
+export const getBookingDetails =(authCookie,req ,id) => async(dispatch) =>{
+        try {
+            const {origin} = absoluteUrl(req);
+            const config={
+                headers:{
+                    cookie:authCookie
+                }
+            }
+            const {data} = await axios.get(`${origin}/api/bookings/${id}`,config)
+            
+            dispatch({
+                type:BOOKING_DETAILS_SUCCESS,
+                payload: data.booking
+            })
+        } catch (error) {
+            dispatch({
+                type: BOOKING_DETAILS_FAIL,
                 payload:error.response.data.message
             })
         }

@@ -10,9 +10,11 @@
     "seeder": "node utils/seeder"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^1.29.0",
     "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.30.0",
+    "easyinvoice": "^2.3.0",
     "mdbreact": "^5.2.0",
     "moment": "^2.29.3",
     "moment-range": "^4.0.2",
@@ -24,6 +26,7 @@
     "next-connect": "^0.12.2",
     "next-redux-wrapper": "^7.0.5",
     "nodemailer": "^6.7.5",
+    "raw-body": "^2.5.1",
     "react": "17.0.2",
     "react-bootstrap": "^2.2.2",
     "react-datepicker": "^4.8.0",
@@ -34,6 +37,7 @@
     "redux": "^4.1.2",
     "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^2.4.1",
+    "stripe": "^9.4.0",
     "validator": "^13.7.0"
   },
   "devDependencies": {

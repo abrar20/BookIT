@@ -1,18 +1,18 @@
 import React from 'react'
 import Layout from '../../components/layout/Layout'
 import { getSession } from 'next-auth/react'
-import MyBookings from '../../components/booking/MyBookings'
+import BookingDetails from '../../components/booking/BookingDetails'
 import {wrapper} from '../../redux/store'
-import { myBookings } from '../../redux/actions/bookingsAction'
+import { getBookingDetails } from '../../redux/actions/bookingsAction'
 
-const MyBookingsPage = () => {
+const BookingDetailsPage = () => {
   return (
     <Layout title='My Bookings'>
-        <MyBookings/>
+        <BookingDetails/>
     </Layout>
   )
 }
-export const getServerSideProps = wrapper.getServerSideProps( store => async ({req}) =>{
+export const getServerSideProps = wrapper.getServerSideProps( store => async({req, params}) =>{
     const session = await getSession({req})
     if(!session){
         return{
@@ -22,6 +22,6 @@ export const getServerSideProps = wrapper.getServerSideProps( store => async ({r
             }
         }
     }
-    await store.dispatch(myBookings(req.headers.cookie, req))
+    await store.dispatch(getBookingDetails(req.headers.cookie, req, params.id))
 })
-export default MyBookingsPage
+export default BookingDetailsPage
